@@ -1,0 +1,12 @@
+c:\users\hobbitmafia\Dropbox\C#\ChatroomStarter\Client\bin\Debug\Client.exe.config
+c:\users\hobbitmafia\Dropbox\C#\ChatroomStarter\Client\bin\Debug\Client.exe
+c:\users\hobbitmafia\Dropbox\C#\ChatroomStarter\Client\bin\Debug\Client.pdb
+c:\users\hobbitmafia\Dropbox\C#\ChatroomStarter\Client\obj\Debug\Client.exe
+c:\users\hobbitmafia\Dropbox\C#\ChatroomStarter\Client\obj\Debug\Client.pdb
+c:\users\hobbitmafia\Dropbox\C#\ChatroomStarter\Client\obj\Debug\Client.csprojResolveAssemblyReference.cache
+C:\Users\britt\Documents\devCode\C#\ChatroomStarter\ChatroomStarter\ChatroomStarter\Client\bin\Debug\Client.exe.config
+C:\Users\britt\Documents\devCode\C#\ChatroomStarter\ChatroomStarter\ChatroomStarter\Client\bin\Debug\Client.exe
+C:\Users\britt\Documents\devCode\C#\ChatroomStarter\ChatroomStarter\ChatroomStarter\Client\bin\Debug\Client.pdb
+C:\Users\britt\Documents\devCode\C#\ChatroomStarter\ChatroomStarter\ChatroomStarter\Client\obj\Debug\Client.csprojResolveAssemblyReference.cache
+C:\Users\britt\Documents\devCode\C#\ChatroomStarter\ChatroomStarter\ChatroomStarter\Client\obj\Debug\Client.exe
+C:\Users\britt\Documents\devCode\C#\ChatroomStarter\ChatroomStarter\ChatroomStarter\Client\obj\Debug\Client.pdb

@@ -15,3 +15,9 @@ C:\Users\britt\Documents\devCode\C#\ChatroomStarter\ChatroomStarter\ChatroomStar
 C:\Users\britt\Documents\devCode\C#\ChatroomStarter\ChatroomStarter\ChatroomStarter\Server\bin\Debug\Server.exe
 C:\Users\britt\Documents\devCode\C#\ChatroomStarter\ChatroomStarter\ChatroomStarter\Server\bin\Debug\Server.pdb
 C:\Users\britt\Documents\devCode\C#\ChatroomStarter\ChatroomStarter\ChatroomStarter\Server\obj\Debug\Server.csprojResolveAssemblyReference.cache
+C:\Users\britt\Documents\devCode\Projects\ChatroomStarter\Server\bin\Debug\Server.exe.config
+C:\Users\britt\Documents\devCode\Projects\ChatroomStarter\Server\obj\Debug\Server.exe
+C:\Users\britt\Documents\devCode\Projects\ChatroomStarter\Server\obj\Debug\Server.pdb
+C:\Users\britt\Documents\devCode\Projects\ChatroomStarter\Server\bin\Debug\Server.exe
+C:\Users\britt\Documents\devCode\Projects\ChatroomStarter\Server\bin\Debug\Server.pdb
+C:\Users\britt\Documents\devCode\Projects\ChatroomStarter\Server\obj\Debug\Server.csprojResolveAssemblyReference.cache

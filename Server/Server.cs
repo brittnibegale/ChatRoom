@@ -16,21 +16,20 @@ namespace Server
         public static Client client;
         TcpListener server;
         private Queue<Message> myQ;
-        private Dictionary<int, Client> dictionary;
+        private Dictionary<int, TcpClient> dictionary;
         int UserIDNumber;
+        private Object messageLock = new Object();
         public Server()
         {
             server = new TcpListener(IPAddress.Parse("192.168.0.131"), 9999);
             myQ = new Queue<Message>();
-            dictionary = new Dictionary<int, Client>();
+            dictionary = new Dictionary<int, TcpClient>();
             UserIDNumber = 0;
             server.Start();
         }
         public void Run()
         {
             Task.Run(() => AcceptClient());
-            
-          
         }
         private void AcceptClient()
         {
@@ -39,22 +38,31 @@ namespace Server
             Console.WriteLine("Connected");
             NetworkStream stream = clientSocket.GetStream();
             client = new Client(stream, clientSocket);
-            AddClientToDictionary(client);
-            NotifyClientOfNewClient(client);
-            string message = client.Recieve();
-            AddToQueue(message);
-            Task.Run(() => Broadcast(message));
+            Task<string> userName = Task.Run(() => client.GetUserName());
+            Task.WaitAll(userName);
+            AddClientToDictionary(clientSocket);
+            NotifyClientOfNewClient(clientSocket);
+            while (true)
+            {
+                Task<string> message = Task.Run(() => client.Recieve());
+                Task<string>[] messages = new Task<string>[] { message };
+                string currentMessage = messages[0].Result;
+                AddToQueue(currentMessage);
+                Task.Run(() => Broadcast(currentMessage));
+            }
 
 
         }
         private void Broadcast(string message)
         {
-            client.Send(message);
+            lock (messageLock)
+            {
+                client.Send(message);
+            }
         }
         private void Respond(string body)
         {
              client.Send(body);
-            //queue should be type message
         }
         private void AddToQueue(string message)
         {
@@ -66,16 +74,16 @@ namespace Server
         {
             myQ.Dequeue();
         }
-        private void AddClientToDictionary(Client client)
+        private void AddClientToDictionary(TcpClient clientSocket)
         {
-            dictionary.Add(UserIDNumber, client);
+            dictionary.Add(UserIDNumber, clientSocket);
             UserIDNumber++;
         }
-        private void NotifyClientOfNewClient(Client client)
+        private void NotifyClientOfNewClient(TcpClient clientSocket)
         {
-            foreach(KeyValuePair<int, Client> clients in dictionary)
+            foreach(KeyValuePair<int, TcpClient> clients in dictionary)
             {
-                string words = "blank added to the chatroom";
+                string words = "{0} added to the chatroom";
                 client.Send(words);
             }
         }

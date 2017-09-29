@@ -11,8 +11,7 @@ namespace Client
         static void Main(string[] args)
         {
             Client client = new Client("192.168.0.131", 9999);
-            client.Send();
-            client.Recieve();
+            client.Start();
             Console.ReadLine();
         }
     }

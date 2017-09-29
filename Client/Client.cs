@@ -19,17 +19,52 @@ namespace Client
             clientSocket.Connect(IPAddress.Parse(IP), port);
             stream = clientSocket.GetStream();
         }
+        public void Start()
+        {
+            Task.Run(() => Send());
+            Task.Run(() => Recieve());
+        }
         public void Send()
         {
-            string messageString = UI.GetInput();
-            byte[] message = Encoding.ASCII.GetBytes(messageString);
-            stream.Write(message, 0, message.Count());
+            while (true)
+            {
+                try
+                {
+                    this.clientSocket.Connect(IPAddress.Parse("192.168.0.131"), 9999);
+
+                    string messageString = UI.GetInput();
+                    byte[] message = Encoding.ASCII.GetBytes(messageString);
+                    stream.Write(message, 0, message.Count());
+                }
+                catch (SocketException e)
+                {
+                    Console.WriteLine(e.Message);
+                    Console.ReadKey();
+                    break;
+                    // you will want to log each e.Message in log
+                }
+            }
         }
         public void Recieve()
         {
-            byte[] recievedMessage = new byte[256];
-            stream.Read(recievedMessage, 0, recievedMessage.Length);
-            UI.DisplayMessage(Encoding.ASCII.GetString(recievedMessage));
+            while (true)
+            {
+                try
+                {
+                    this.clientSocket.Connect(IPAddress.Parse("192.168.0.131"), 9999);
+
+                    byte[] recievedMessage = new byte[256];
+                    stream.Read(recievedMessage, 0, recievedMessage.Length);
+                    UI.DisplayMessage(Encoding.ASCII.GetString(recievedMessage));
+                }
+                catch (SocketException e)
+                {
+                    Console.WriteLine(e.Message);
+                    Console.ReadKey();
+                    break;
+                    // you will want to log each e.Message in log
+                }
+            }
         }
     }
 }

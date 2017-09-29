@@ -14,35 +14,41 @@ namespace Server
         NetworkStream stream;
         TcpClient client;
         public string UserId;
-        public string userName;
+        string userName;
         public Client(NetworkStream Stream, TcpClient Client)
         {
             stream = Stream;
             client = Client;
             UserId = "495933b6-1762-47a1-b655-483510072e73";
-            //userName = GetUserName();
         }
         public void Send(string Message)
         {
-            byte[] message = Encoding.ASCII.GetBytes(Message);
-            stream.Write(message, 0, message.Count());
+           
+                byte[] message = Encoding.ASCII.GetBytes(Message);
+                stream.Write(message, 0, message.Count());
+            
         }
         public string Recieve()
         {
-            byte[] recievedMessage = new byte[256];
-            stream.Read(recievedMessage, 0, recievedMessage.Length);
-            string recievedMessageString = Encoding.ASCII.GetString(recievedMessage);
-            Console.WriteLine(recievedMessageString);
-
-            return recievedMessageString;
+            while (true)
+            {
+                byte[] recievedMessage = new byte[256];
+                stream.Read(recievedMessage, 0, recievedMessage.Length);
+                string recievedMessageString = Encoding.ASCII.GetString(recievedMessage);
+                Console.WriteLine(recievedMessageString);
+                return recievedMessageString;
+            }
         }
 
-        //public string GetUserName()
-        //{
-        //    Console.WriteLine("What do you want your username to be?");
-        //    userName = Console.ReadLine();
-        //    return userName;
-        //}
+        public string GetUserName()
+        {
+           Send("What is your userName?");
+           userName = Recieve();
+           return userName;
+            
+        }
+
+       
 
     }
 }

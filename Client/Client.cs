@@ -22,7 +22,8 @@ namespace Client
         public void Start()
         {
             Task.Run(() => Send());
-            Task.Run(() => Recieve());
+            Task value = Task.Run(() => Recieve());
+            value.Wait();
         }
         public void Send()
         {
@@ -30,8 +31,6 @@ namespace Client
             {
                 try
                 {
-                    this.clientSocket.Connect(IPAddress.Parse("192.168.0.131"), 9999);
-
                     string messageString = UI.GetInput();
                     byte[] message = Encoding.ASCII.GetBytes(messageString);
                     stream.Write(message, 0, message.Count());
@@ -41,7 +40,7 @@ namespace Client
                     Console.WriteLine(e.Message);
                     Console.ReadKey();
                     break;
-                    // you will want to log each e.Message in log
+                    // log each e.Message in log
                 }
             }
         }
@@ -51,8 +50,6 @@ namespace Client
             {
                 try
                 {
-                    this.clientSocket.Connect(IPAddress.Parse("192.168.0.131"), 9999);
-
                     byte[] recievedMessage = new byte[256];
                     stream.Read(recievedMessage, 0, recievedMessage.Length);
                     UI.DisplayMessage(Encoding.ASCII.GetString(recievedMessage));

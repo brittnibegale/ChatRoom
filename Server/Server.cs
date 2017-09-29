@@ -13,79 +13,104 @@ namespace Server
 {
     class Server
     {
-        public static Client client;
         TcpListener server;
         private Queue<Message> myQ;
-        private Dictionary<int, TcpClient> dictionary;
+        private Dictionary<int, Client> dictionary;
         int UserIDNumber;
         private Object messageLock = new Object();
         public Server()
         {
-            server = new TcpListener(IPAddress.Parse("192.168.0.131"), 9999);
+            server = new TcpListener(IPAddress.Any, 9999);
             myQ = new Queue<Message>();
-            dictionary = new Dictionary<int, TcpClient>();
+            dictionary = new Dictionary<int, Client>();
             UserIDNumber = 0;
             server.Start();
         }
         public void Run()
         {
             Task.Run(() => AcceptClient());
+            Task.Run(() => Broadcast());
         }
         private void AcceptClient()
         {
-            TcpClient clientSocket = default(TcpClient);
-            clientSocket = server.AcceptTcpClient();
-            Console.WriteLine("Connected");
-            NetworkStream stream = clientSocket.GetStream();
-            client = new Client(stream, clientSocket);
-            Task<string> userName = Task.Run(() => client.GetUserName());
-            Task.WaitAll(userName);
-            AddClientToDictionary(clientSocket);
-            NotifyClientOfNewClient(clientSocket);
             while (true)
             {
-                Task<string> message = Task.Run(() => client.Recieve());
-                Task<string>[] messages = new Task<string>[] { message };
-                string currentMessage = messages[0].Result;
-                AddToQueue(currentMessage);
-                Task.Run(() => Broadcast(currentMessage));
+                TcpClient clientSocket = default(TcpClient);
+                clientSocket = server.AcceptTcpClient();
+                Console.WriteLine("Connected");
+                NetworkStream stream = clientSocket.GetStream();
+                Client client = new Client(stream, clientSocket);
+                AddClientToDictionary(client);
+                Task username = Task.Run(() => GetInformationForNotification(client));
+                username.Wait();
+                Task.Run(() => CreateNewClientChat(clientSocket, client));
             }
-
-
         }
-        private void Broadcast(string message)
+        private void GetInformationForNotification(Client client)
         {
-            lock (messageLock)
+            Task<string> userName = Task.Run(() => client.GetUserName());
+            userName.Wait();
+            string name = userName.Result.Trim('\0');
+            NotifyClientOfNewClient(name, client);
+        }
+
+        private void CreateNewClientChat(TcpClient clientSocket, Client client)
+        {
+            while (true)
             {
-                client.Send(message);
+                try
+                {
+                    Task<string> message = Task.Run(() => client.Recieve());
+                    Task<string>[] messages = new Task<string>[] { message };
+                    string currentMessage = messages[0].Result;
+                    AddToQueue(currentMessage, client);
+                }
+                catch (Exception e)
+                {
+
+                }
             }
         }
-        private void Respond(string body)
+        private void Broadcast()
+        {
+            while (true)
+            {
+                if (myQ.Count() > 0)
+                {
+                    string message = RemoveFromQueue();
+                    lock (messageLock)
+                    {
+                        foreach (KeyValuePair<int, Client> clients in dictionary)
+                        {
+                            clients.Value.Send(message);
+                        }
+                    }
+                }
+            }
+        }
+        private void Respond(string body, Client client)
         {
              client.Send(body);
         }
-        private void AddToQueue(string message)
+        private void AddToQueue(string message, Client client)
         {
             Message currentMessage = new Message(client, message);
             myQ.Enqueue(currentMessage);
         }
 
-        private void RemoveFromQueue(string message)
+        private string RemoveFromQueue()
         {
-            myQ.Dequeue();
+            return myQ.Dequeue().Body;
         }
-        private void AddClientToDictionary(TcpClient clientSocket)
+        private void AddClientToDictionary(Client client)
         {
-            dictionary.Add(UserIDNumber, clientSocket);
+            dictionary.Add(UserIDNumber, client);
             UserIDNumber++;
         }
-        private void NotifyClientOfNewClient(TcpClient clientSocket)
+        private void NotifyClientOfNewClient(string userName, Client client)
         {
-            foreach(KeyValuePair<int, TcpClient> clients in dictionary)
-            {
-                string words = "{0} added to the chatroom";
-                client.Send(words);
-            }
+             string words = userName + " added to the chatroom.";
+             AddToQueue(words, client);
         }
     }
 }

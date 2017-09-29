@@ -42,7 +42,7 @@ namespace Server
 
         public string GetUserName()
         {
-           Send("What is your userName?");
+           Send("What is your username?");
            userName = Recieve();
            return userName;
             

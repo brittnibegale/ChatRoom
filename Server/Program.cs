@@ -11,7 +11,8 @@ namespace Server
     {
         static void Main(string[] args)
         {
-            new Server().Run();
+            TextLogger logger = new TextLogger();
+            new Server(logger).Run();
             Console.ReadLine();
         }
     }

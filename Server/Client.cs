@@ -9,34 +9,43 @@ using System.IO;
 
 namespace Server
 {
-    class Client
+    public class Client
     {
         NetworkStream stream;
         TcpClient client;
-        public string UserId;
-        string userName;
+        public int UserId;
+        public string userName;
         public Client(NetworkStream Stream, TcpClient Client)
         {
             stream = Stream;
             client = Client;
-            UserId = "495933b6-1762-47a1-b655-483510072e73";
+            UserId = 1;
         }
+        public bool IsConnected
+        {
+            get { return client.Connected; }
+        }
+
         public void Send(string Message)
         {
-           
-                byte[] message = Encoding.ASCII.GetBytes(Message);
-                stream.Write(message, 0, message.Count());
-            
+            byte[] message = Encoding.ASCII.GetBytes(Message);
+            stream.Write(message, 0, message.Count());
         }
         public string Recieve()
         {
-            while (true)
+            try
             {
                 byte[] recievedMessage = new byte[256];
                 stream.Read(recievedMessage, 0, recievedMessage.Length);
                 string recievedMessageString = Encoding.ASCII.GetString(recievedMessage);
                 Console.WriteLine(recievedMessageString);
                 return recievedMessageString;
+            }
+            catch(Exception e)
+            {
+                string message = "The server has crashed." + e;
+                return message;
+                    
             }
         }
 
@@ -45,10 +54,6 @@ namespace Server
            Send("What is your username?");
            userName = Recieve();
            return userName;
-            
         }
-
-       
-
     }
 }

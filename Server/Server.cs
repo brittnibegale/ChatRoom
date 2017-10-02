@@ -14,16 +14,18 @@ namespace Server
     class Server
     {
         TcpListener server;
-        private Queue<Message> myQ;
-        private Dictionary<int, Client> dictionary;
+        private Queue<Message> messages;
+        private Dictionary<int, Client> people;
         int UserIDNumber;
         private Object messageLock = new Object();
-        public Server()
+        ILog logger;
+        public Server(ILog logger)
         {
             server = new TcpListener(IPAddress.Any, 9999);
-            myQ = new Queue<Message>();
-            dictionary = new Dictionary<int, Client>();
+            messages = new Queue<Message>();
+            people = new Dictionary<int, Client>();
             UserIDNumber = 0;
+            this.logger = logger;
             server.Start();
         }
         public void Run()
@@ -35,15 +37,22 @@ namespace Server
         {
             while (true)
             {
-                TcpClient clientSocket = default(TcpClient);
-                clientSocket = server.AcceptTcpClient();
-                Console.WriteLine("Connected");
-                NetworkStream stream = clientSocket.GetStream();
-                Client client = new Client(stream, clientSocket);
-                AddClientToDictionary(client);
-                Task username = Task.Run(() => GetInformationForNotification(client));
-                username.Wait();
-                Task.Run(() => CreateNewClientChat(clientSocket, client));
+                try
+                {
+                    TcpClient clientSocket = default(TcpClient);
+                    clientSocket = server.AcceptTcpClient();
+                    Console.WriteLine("Connected");
+                    NetworkStream stream = clientSocket.GetStream();
+                    Client client = new Client(stream, clientSocket);
+                    AddClientToDictionary(client);
+                    Task username = Task.Run(() => GetInformationForNotification(client));
+                    username.Wait();
+                    Task.Run(() => CreateNewClientChat(clientSocket, client));
+                }
+                catch(Exception e)
+                {
+                    logger.ServerClosed();
+                }
             }
         }
         private void GetInformationForNotification(Client client)
@@ -53,7 +62,6 @@ namespace Server
             string name = userName.Result.Trim('\0');
             NotifyClientOfNewClient(name, client);
         }
-
         private void CreateNewClientChat(TcpClient clientSocket, Client client)
         {
             while (true)
@@ -61,29 +69,46 @@ namespace Server
                 try
                 {
                     Task<string> message = Task.Run(() => client.Recieve());
+                    message.Wait();
                     Task<string>[] messages = new Task<string>[] { message };
                     string currentMessage = messages[0].Result;
                     AddToQueue(currentMessage, client);
                 }
                 catch (Exception e)
                 {
-
+                    string error = "You have left the chatroom. " + e;
+                    Console.Write(error);
+                    logger.LogError(e);
                 }
+
             }
         }
         private void Broadcast()
         {
             while (true)
             {
-                if (myQ.Count() > 0)
+                if (messages.Count() > 0)
                 {
-                    string message = RemoveFromQueue();
+                    Message message = RemoveFromQueue();
                     lock (messageLock)
                     {
-                        foreach (KeyValuePair<int, Client> clients in dictionary)
+                        Client removedPerson = null;
+                        foreach (KeyValuePair<int, Client> clients in people)
                         {
-                            clients.Value.Send(message);
+                            if (message.sender.IsConnected == true)
+                            {
+                                if (!(message.sender.userName == clients.Value.userName))
+                                { 
+                                    clients.Value.Send(message.Body);
+                                }
+                            }
+                            else
+                            {
+                                logger.LogPersonLeft(message.sender);
+                                removedPerson = message.sender;
+                            }
                         }
+                      RemoveClientFromDictionary(removedPerson);
                     }
                 }
             }
@@ -95,22 +120,41 @@ namespace Server
         private void AddToQueue(string message, Client client)
         {
             Message currentMessage = new Message(client, message);
-            myQ.Enqueue(currentMessage);
+            messages.Enqueue(currentMessage);
+            logger.LogMessage(message);
         }
-
-        private string RemoveFromQueue()
+        private Message RemoveFromQueue()
         {
-            return myQ.Dequeue().Body;
+            return messages.Dequeue();
         }
         private void AddClientToDictionary(Client client)
         {
-            dictionary.Add(UserIDNumber, client);
+            people.Add(UserIDNumber, client);
+            client.UserId = UserIDNumber;
             UserIDNumber++;
+        }
+        private void RemoveClientFromDictionary(Client client)
+        {
+            if (!(client == null))
+            {
+                people.Remove(client.UserId);
+                CheckForPeople(client);
+            }
+        }
+        private void CheckForPeople(Client client)
+        {
+            if(people.Count <= 0)
+            {
+                logger.ServerClosed();
+                Environment.Exit(0);
+            }
         }
         private void NotifyClientOfNewClient(string userName, Client client)
         {
-             string words = userName + " added to the chatroom.";
-             AddToQueue(words, client);
+            string words = userName + " added to the chatroom.";
+            client.userName = userName;
+            AddToQueue(words, client);
+            logger.LogPerson(userName);
         }
     }
 }

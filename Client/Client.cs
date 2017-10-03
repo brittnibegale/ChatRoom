@@ -40,7 +40,6 @@ namespace Client
                     Console.WriteLine(e.Message);
                     Console.ReadKey();
                     break;
-                    // log each e.Message in log
                 }
             }
         }

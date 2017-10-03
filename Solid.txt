@@ -1,0 +1,17 @@
+Single Responsibility Principle -  
+
+Server Class
+
+	private Message RemoveFromQueue()
+        {
+            return messages.Dequeue();
+        }
+
+Open/Closed Principle- 
+
+  Server, Client Class
+
+	public bool IsConnected
+        {
+            get { return client.Connected; }
+        }

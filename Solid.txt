@@ -7,11 +7,6 @@ Server Class
             return messages.Dequeue();
         }
 
-Open/Closed Principle- 
+Interface Segregation Principle-
 
-  Server, Client Class
-
-	public bool IsConnected
-        {
-            get { return client.Connected; }
-        }
+When I have Text Logger inherit from ILog it needs to use all of the methods in ILog.

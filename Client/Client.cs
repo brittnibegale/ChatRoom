@@ -58,7 +58,6 @@ namespace Client
                     Console.WriteLine(e.Message);
                     Console.ReadKey();
                     break;
-                    // you will want to log each e.Message in log
                 }
             }
         }
